@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   DataType,
@@ -14,5 +15,6 @@ export class BaseModel extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column
+  @ApiProperty()
   id: string;
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './entities/user.entitiy';
 
 @Injectable()
@@ -20,11 +19,11 @@ export class UsersService {
     return user;
   }
 
-  async createUser({
-    email,
-    username,
-    profileImg,
-  }: CreateUserDto): Promise<User> {
+  async createUser(
+    email: string,
+    username: string,
+    profileImg: string,
+  ): Promise<User> {
     const user = await this.findByEmail(email);
     if (user) {
       return user;

@@ -58,11 +58,7 @@ export class AuthService {
 
   async signInWithGoogleIdToken(idToken: string): Promise<User> {
     const { email, picture, name } = await this.verifyGoogleIdToken(idToken);
-    const user = await this.usersService.createUser({
-      email,
-      username: name,
-      profileImg: picture,
-    });
+    const user = await this.usersService.createUser(email, name, picture);
     return user;
   }
 }
