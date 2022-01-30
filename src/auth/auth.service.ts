@@ -1,10 +1,10 @@
 import { google, Auth as GoogleAuth } from 'googleapis';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/entities/user.entitiy';
-import { JwtTokenPayload } from 'src/@types';
+import { CustomException } from 'src/common/exceptions/custom.exception';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   getJwtAccessToken(userId: string) {
-    const payload: JwtTokenPayload = {
+    const payload = {
       userId,
       iss: 'na-eats',
       sub: 'accessToken',
@@ -32,7 +32,7 @@ export class AuthService {
   }
 
   getJwtRefreshToken(userId: string) {
-    const payload: JwtTokenPayload = {
+    const payload = {
       userId,
       iss: 'na-eats',
       sub: 'refreshToken',
@@ -52,7 +52,7 @@ export class AuthService {
       const { payload } = loginTicket.getAttributes();
       return payload;
     } catch (error) {
-      throw new UnauthorizedException();
+      throw new CustomException(HttpStatus.UNAUTHORIZED, 40103);
     }
   }
 

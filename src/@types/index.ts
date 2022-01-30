@@ -1,6 +1,3 @@
-export interface JwtTokenPayload {
-  userId: string;
-  tokenId?: string;
-  iss: string;
-  sub: string;
-}
+import { ExceptionMessage } from 'src/common/constants/messages.constant';
+
+export type ErrorCode = keyof typeof ExceptionMessage;
