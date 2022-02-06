@@ -35,4 +35,14 @@ export class UsersService {
     });
     return newUser;
   }
+
+  async setRefreshToken(userId: string, refreshToken: string) {
+    const user = await this.findById(userId);
+    await user.update({ hashedRefreshToken: refreshToken });
+  }
+
+  async deleteRefreshToken(userId: string) {
+    const user = await this.findById(userId);
+    await user.update({ hashedRefreshToken: null });
+  }
 }

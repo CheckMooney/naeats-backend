@@ -15,7 +15,7 @@ import {
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(JwtAccessGuard)
   @Get()

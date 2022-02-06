@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entitiy';
 import { AuthUser } from './decorators/auth-user.decorator';
 import { AuthService } from './auth.service';
+import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { GoogleAuthDto, GoogleAuthResponse } from './dtos/google-auth.dto';
 import { ExceptionResponse } from 'src/common/responses/exception.response';
@@ -32,10 +33,10 @@ export class AuthController {
     description: 'Google Id Token is invalid.',
     type: ExceptionResponse,
   })
-  async signInWithGoogleIdToken(@Body() { idToken }: GoogleAuthDto) {
-    const user = await this.authService.signInWithGoogleIdToken(idToken);
+  async logInWithGoogleIdToken(@Body() { idToken }: GoogleAuthDto) {
+    const user = await this.authService.logInWithGoogleIdToken(idToken);
     const accessToken = this.authService.getJwtAccessToken(user.id);
-    const refreshToken = this.authService.getJwtRefreshToken(user.id);
+    const refreshToken = await this.authService.getJwtRefreshToken(user.id);
     return {
       accessToken,
       refreshToken,
@@ -65,8 +66,12 @@ export class AuthController {
     };
   }
 
+  @UseGuards(JwtAccessGuard)
   @Post('logout')
-  async logout() {
-    return;
+  @ApiOperation({
+    description: 'RefreshToken을 삭제함으로 로그아웃',
+  })
+  async logout(@AuthUser() user: User) {
+    await this.authService.logOut(user.id);
   }
 }
