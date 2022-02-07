@@ -36,6 +36,7 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
       synchronize: process.env.NODE_ENV !== 'production',
+      sync: { alter: process.env.NODE_ENV !== 'production' },
       autoLoadModels: true,
     }),
     UsersModule,

@@ -5,13 +5,14 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   const configService = app.get(ConfigService);
   const port = configService.get<string>('PORT');
   const isProduction = configService.get<string>('NODE_ENV') === 'production';
-
   if (!isProduction) {
     app.enableCors();
   }
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
@@ -20,7 +21,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(port);
 }
