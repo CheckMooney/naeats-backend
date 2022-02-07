@@ -31,7 +31,7 @@ export class AuthService {
     return accessToken;
   }
 
-  getJwtRefreshToken(userId: string) {
+  async getJwtRefreshToken(userId: string) {
     const payload = {
       userId,
       iss: 'na-eats',
@@ -41,6 +41,7 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET_KEY'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN'),
     });
+    await this.usersService.setRefreshToken(userId, refreshToken);
     return refreshToken;
   }
 
@@ -56,9 +57,13 @@ export class AuthService {
     }
   }
 
-  async signInWithGoogleIdToken(idToken: string): Promise<User> {
+  async logInWithGoogleIdToken(idToken: string): Promise<User> {
     const { email, picture, name } = await this.verifyGoogleIdToken(idToken);
     const user = await this.usersService.createUser(email, name, picture);
     return user;
+  }
+
+  async logOut(userId: string) {
+    await this.usersService.deleteRefreshToken(userId);
   }
 }
