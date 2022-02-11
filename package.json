@@ -32,6 +32,8 @@
     "@nestjs/sequelize": "^8.0.0",
     "@nestjs/swagger": "^5.1.5",
     "bcrypt": "^5.0.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.2",
     "googleapis": "^92.0.0",
     "joi": "^17.5.0",
     "mysql2": "^2.3.3",

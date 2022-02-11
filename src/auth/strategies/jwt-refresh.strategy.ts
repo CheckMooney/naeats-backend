@@ -30,8 +30,11 @@ export class JwtRefreshStrategy extends PassportStrategy(
     if (!user) {
       throw new CustomException(HttpStatus.UNAUTHORIZED, 40101);
     }
-    const refreshToken = request.headers.authorization;
-    const isValidRefreshToken = await user.compareRefreshToken(refreshToken);
+    const refreshToken = request.headers.authorization?.replace(
+      /^(Bearer )/,
+      '',
+    );
+    const isValidRefreshToken = user.compareRefreshToken(refreshToken);
     if (!isValidRefreshToken) {
       throw new CustomException(HttpStatus.UNAUTHORIZED, 40104);
     }

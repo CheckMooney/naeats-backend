@@ -3,8 +3,8 @@ import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entitiy';
-import { GetProfileResponse } from './dtos/get-profile.dto';
 import { ExceptionResponse } from 'src/common/responses/exception.response';
+import { GetProfileResponse } from './dtos';
 import {
   ApiBearerAuth,
   ApiOperation,

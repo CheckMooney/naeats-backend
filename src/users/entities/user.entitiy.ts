@@ -1,69 +1,61 @@
 import * as bcrypt from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  Table,
-  Column,
-  Unique,
-  IsEmail,
-  IsUrl,
-  AllowNull,
-  BeforeUpdate,
-  Default,
-} from 'sequelize-typescript';
+import { Table, Column, DataType } from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
-import { InternalServerErrorException } from '@nestjs/common';
+import { IsEmail, IsString, IsUrl } from 'class-validator';
 
 @Table
 export class User extends BaseModel {
   @ApiProperty()
-  @IsEmail
-  @Unique
-  @Column
+  @IsEmail()
+  @Column({
+    type: DataType.STRING,
+    unique: true,
+    validate: {
+      isEmail: true,
+    },
+  })
   email: string;
 
   @ApiProperty()
-  @Column
+  @IsString()
+  @Column({
+    type: DataType.STRING,
+  })
   username: string;
 
   @ApiProperty()
-  @IsUrl
-  @Column
+  @IsUrl()
+  @Column({
+    type: DataType.STRING,
+    validate: {
+      isUrl: true,
+    },
+  })
   profileImg: string;
 
-  @AllowNull
-  @Default(null)
-  @Column
-  hashedRefreshToken?: string;
-
-  @BeforeUpdate
-  static async hashRefreshToken(instance: User, { fields }: any) {
-    try {
-      if (
-        instance.hashedRefreshToken &&
-        fields.includes('hashedRefreshToken')
-      ) {
-        instance.hashedRefreshToken = await bcrypt.hash(
-          instance.hashedRefreshToken,
-          10,
-        );
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null,
+    set(this: User, refreshToken: string | null) {
+      console.log(refreshToken);
+      if (refreshToken) {
+        const hashedRefreshToken = bcrypt.hashSync(refreshToken, 10);
+        this.setDataValue('hashedRefreshToken', hashedRefreshToken);
+      } else {
+        this.setDataValue('hashedRefreshToken', null);
       }
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
-  }
+    },
+  })
+  @IsString()
+  hashedRefreshToken: string | null;
 
-  async compareRefreshToken(refreshToken: string): Promise<boolean> {
-    try {
-      if (!this.hashedRefreshToken) {
-        return false;
-      }
-      const result = await bcrypt.compare(
-        refreshToken,
-        this.hashedRefreshToken,
-      );
-      return result;
-    } catch (error) {
-      throw new InternalServerErrorException();
+  compareRefreshToken(refreshToken: string): boolean {
+    if (!this.hashedRefreshToken) {
+      return false;
     }
+    const result = bcrypt.compareSync(refreshToken, this.hashedRefreshToken);
+    return result;
   }
 }

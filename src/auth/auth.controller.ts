@@ -4,7 +4,7 @@ import { AuthUser } from './decorators/auth-user.decorator';
 import { AuthService } from './auth.service';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { GoogleAuthDto, GoogleAuthResponse } from './dtos/google-auth.dto';
+import { GoogleAuthDto, GoogleAuthResponse } from './dtos';
 import { ExceptionResponse } from 'src/common/responses/exception.response';
 import {
   ApiResponse,
