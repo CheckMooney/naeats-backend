@@ -5,6 +5,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { FoodsModule } from './foods/foods.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { FoodsModule } from './foods/foods.module';
         JWT_ACCESS_TOKEN_EXPIRES_IN: Joi.string().required(),
         JWT_REFRESH_TOKEN_SECRET_KEY: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRES_IN: Joi.string().required(),
+        APP_URL: Joi.string().required(),
+        UPLOAD_PATH: Joi.string().required(),
       }),
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
@@ -43,6 +46,7 @@ import { FoodsModule } from './foods/foods.module';
     UsersModule,
     AuthModule,
     FoodsModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [],
