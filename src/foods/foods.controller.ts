@@ -15,13 +15,15 @@ import {
   GetFoodsDto,
   UpdateFoodDto,
 } from './dtos';
-import { FoodCategory } from './enums/food-category.enum';
-import { FoodsService } from './foods.service';
+import { CategoriesService, FoodsService } from './foods.service';
 
 @ApiTags('Foods')
 @Controller('foods')
 export class FoodsController {
-  constructor(private readonly foodsService: FoodsService) {}
+  constructor(
+    private readonly foodsService: FoodsService,
+    private readonly categoriesService: CategoriesService,
+  ) {}
 
   @Get()
   getFoods(@Query() getFoodsDto: GetFoodsDto) {
@@ -49,7 +51,7 @@ export class FoodsController {
   }
 
   @Get('/category')
-  getFoodCategories() {
-    return Object.keys(FoodCategory);
+  getAllCategories() {
+    return this.categoriesService.findAll();
   }
 }

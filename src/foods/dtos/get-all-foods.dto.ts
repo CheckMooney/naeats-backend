@@ -1,4 +1,14 @@
-import { PartialType, PickType } from '@nestjs/swagger';
-import { Food } from '../entities/food.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
-export class GetAllFoodsDto extends PartialType(PickType(Food, ['category'])) {}
+export class GetAllFoodsDto {
+  @ApiProperty()
+  @IsOptional()
+  @IsString({ each: true })
+  categories?: string | string[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  or?: boolean;
+}

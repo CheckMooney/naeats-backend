@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString, IsUrl } from 'class-validator';
-import { Table, Column, DataType } from 'sequelize-typescript';
+import { IsString, IsUrl } from 'class-validator';
+import { Table, Column, DataType, BelongsToMany } from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
-import { FoodCategory } from '../enums/food-category.enum';
+import { Category } from './category.entity';
+import { FoodCategory } from './food-category.entitiy';
 
 @Table
 export class Food extends BaseModel {
@@ -12,12 +13,10 @@ export class Food extends BaseModel {
   name: string;
 
   @ApiProperty()
-  @IsEnum(FoodCategory)
-  @Column(DataType.ENUM({ values: Object.keys(FoodCategory) }))
-  category: FoodCategory;
-
-  @ApiProperty()
   @IsUrl()
   @Column({ type: DataType.STRING, validate: { isUrl: true } })
   thumbnail: string;
+
+  @BelongsToMany(() => Category, () => FoodCategory)
+  categories: Array<Category & { FoodCategory: FoodCategory }>;
 }
