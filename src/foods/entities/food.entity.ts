@@ -7,16 +7,17 @@ import { FoodCategory } from './food-category.entitiy';
 
 @Table
 export class Food extends BaseModel {
-  @ApiProperty()
+  @ApiProperty({ description: '음식 이름' })
   @IsString()
   @Column(DataType.STRING)
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '음식 썸네일' })
   @IsUrl()
   @Column({ type: DataType.STRING, validate: { isUrl: true } })
   thumbnail: string;
 
+  @ApiProperty({ description: '음식 카테고리' })
   @BelongsToMany(() => Category, () => FoodCategory)
   categories: Array<Category & { FoodCategory: FoodCategory }>;
 }

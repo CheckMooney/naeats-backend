@@ -6,7 +6,7 @@ import { IsEmail, IsString, IsUrl } from 'class-validator';
 
 @Table
 export class User extends BaseModel {
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 이메일' })
   @IsEmail()
   @Column({
     type: DataType.STRING,
@@ -17,14 +17,14 @@ export class User extends BaseModel {
   })
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 이름' })
   @IsString()
   @Column({
     type: DataType.STRING,
   })
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 프로필 이미지' })
   @IsUrl()
   @Column({
     type: DataType.STRING,
@@ -39,7 +39,6 @@ export class User extends BaseModel {
     allowNull: true,
     defaultValue: null,
     set(this: User, refreshToken: string | null) {
-      console.log(refreshToken);
       if (refreshToken) {
         const hashedRefreshToken = bcrypt.hashSync(refreshToken, 10);
         this.setDataValue('hashedRefreshToken', hashedRefreshToken);

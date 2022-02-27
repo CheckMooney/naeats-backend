@@ -5,7 +5,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { imageMulterOptions } from 'src/utils/multer.options';
 import { UploadService } from './upload.service';
 
@@ -15,6 +15,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
+  @ApiOperation({ description: '단일 이미지 업로드' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

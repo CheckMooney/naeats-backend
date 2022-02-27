@@ -4,7 +4,7 @@ import { AuthUser } from './decorators/auth-user.decorator';
 import { AuthService } from './auth.service';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { GoogleAuthDto, GoogleAuthResponse } from './dtos';
+import { GoogleAuthDto, GoogleAuthResponse, RefreshResponse } from './dtos';
 import { ExceptionResponse } from 'src/common/responses/exception.response';
 import {
   ApiResponse,
@@ -52,7 +52,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Access Token 재발급.',
-    type: GoogleAuthResponse,
+    type: RefreshResponse,
   })
   @ApiResponse({
     status: 401,

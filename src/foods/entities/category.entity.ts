@@ -7,7 +7,7 @@ import { Food } from './food.entity';
 
 @Table
 export class Category extends BaseModel {
-  @ApiProperty()
+  @ApiProperty({ description: '음식 카테고리 이름' })
   @IsString()
   @Column(DataType.STRING)
   name: string;

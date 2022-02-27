@@ -2,15 +2,15 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
 export class GoogleAuthDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'Google Id Token' })
   @IsString()
   idToken: string;
 }
 
 export class GoogleAuthResponse {
-  @ApiProperty()
+  @ApiProperty({ description: 'Access Token' })
   accessToken: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'Refresh Token' })
   refreshToken: string;
 }
