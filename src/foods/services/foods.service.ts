@@ -1,38 +1,16 @@
 import { Op } from 'sequelize';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Food } from './entities/food.entity';
-import { Category } from './entities/category.entity';
-import { FoodCategory } from './entities/food-category.entitiy';
 import { CustomException } from 'src/common/exceptions/custom.exception';
+import { CategoriesService } from './categories.service';
+import { Food, Category, FoodCategory, UserLikeFood } from '../entities';
 import {
   CreateFoodDto,
   GetAllFoodsDto,
   GetFoodsDto,
   UpdateFoodDto,
-} from './dtos';
-
-@Injectable()
-export class CategoriesService {
-  constructor(
-    @InjectModel(Category)
-    private readonly categoryModel: typeof Category,
-  ) {}
-
-  async findAll(): Promise<Category[]> {
-    const caterories = await this.categoryModel.findAll({
-      attributes: ['id', 'name'],
-    });
-    return caterories;
-  }
-
-  async findOrCreate(name: string): Promise<Category> {
-    const [category] = await this.categoryModel.findOrCreate({
-      where: { name },
-    });
-    return category;
-  }
-}
+} from '../dtos';
+import { User } from 'src/users/entities/user.entitiy';
 
 @Injectable()
 export class FoodsService {
@@ -41,6 +19,8 @@ export class FoodsService {
     private readonly foodModel: typeof Food,
     @InjectModel(FoodCategory)
     private readonly foodCategoryModel: typeof FoodCategory,
+    @InjectModel(UserLikeFood)
+    private readonly userLikeFoodModel: typeof UserLikeFood,
     private readonly categoriesService: CategoriesService,
   ) {}
 
@@ -151,5 +131,21 @@ export class FoodsService {
   async deleteFood(foodId: string) {
     const food = await this.findById(foodId);
     food.destroy();
+  }
+
+  async getLikeFoodList(userId: string) {
+    const foodList = await this.foodModel.findAll({
+      attributes: ['id', 'name', 'thumbnail'],
+      include: [
+        {
+          model: User,
+          attributes: [],
+          where: {
+            id: userId,
+          },
+        },
+      ],
+    });
+    return foodList;
   }
 }

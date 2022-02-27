@@ -7,15 +7,23 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CategoriesService, FoodsService } from './foods.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  FoodsService,
+  CategoriesService,
+  UserLikeFoodService,
+} from './services';
 import {
   CreateFoodDto,
   GetAllFoodsDto,
   GetFoodsDto,
   UpdateFoodDto,
 } from './dtos';
+import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
+import { User } from 'src/users/entities/user.entitiy';
+import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 
 @ApiTags('Foods')
 @Controller('foods')
@@ -23,6 +31,7 @@ export class FoodsController {
   constructor(
     private readonly foodsService: FoodsService,
     private readonly categoriesService: CategoriesService,
+    private readonly userLikeFoodService: UserLikeFoodService,
   ) {}
 
   @Get()
@@ -59,5 +68,21 @@ export class FoodsController {
   @ApiOperation({ description: '모든 카테고리 가져오기' })
   getAllCategories() {
     return this.categoriesService.findAll();
+  }
+
+  @UseGuards(JwtAccessGuard)
+  @Get('/like')
+  @ApiOperation({ description: '사용자가 좋아하는 음식 가져오기' })
+  @ApiBearerAuth('Access Token')
+  getLikeFoodList(@AuthUser() user: User) {
+    return this.foodsService.getLikeFoodList(user.id);
+  }
+
+  @UseGuards(JwtAccessGuard)
+  @Post('/like/:id')
+  @ApiOperation({ description: '음식 좋아요 또는 취소' })
+  @ApiBearerAuth('Access Token')
+  userLikeOrDislikeFood(@AuthUser() user: User, @Param('id') foodId: string) {
+    return this.userLikeFoodService.userLikeOrDislikeFood(user.id, foodId);
   }
 }

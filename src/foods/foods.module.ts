@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Food } from './entities/food.entity';
-import { CategoriesService, FoodsService } from './foods.service';
 import { FoodsController } from './foods.controller';
-import { Category } from './entities/category.entity';
-import { FoodCategory } from './entities/food-category.entitiy';
+import {
+  FoodsService,
+  CategoriesService,
+  UserLikeFoodService,
+} from './services';
+import { Food, Category, FoodCategory, UserLikeFood } from './entities';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Food, Category, FoodCategory])],
-  providers: [FoodsService, CategoriesService],
+  imports: [
+    SequelizeModule.forFeature([Food, Category, FoodCategory, UserLikeFood]),
+  ],
+  providers: [CategoriesService, FoodsService, UserLikeFoodService],
   controllers: [FoodsController],
 })
 export class FoodsModule {}
