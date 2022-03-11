@@ -6,11 +6,3 @@ export class GoogleAuthDto {
   @IsString()
   idToken: string;
 }
-
-export class GoogleAuthResponse {
-  @ApiProperty({ description: 'Access Token' })
-  accessToken: string;
-
-  @ApiProperty({ description: 'Refresh Token' })
-  refreshToken: string;
-}

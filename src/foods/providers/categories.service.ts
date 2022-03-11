@@ -9,11 +9,9 @@ export class CategoriesService {
     private readonly categoryModel: typeof Category,
   ) {}
 
-  async findAll(): Promise<Category[]> {
-    const caterories = await this.categoryModel.findAll({
-      attributes: ['id', 'name'],
-    });
-    return caterories;
+  async findAll(): Promise<string[]> {
+    const caterories = await this.categoryModel.findAll();
+    return caterories.map((category) => category.name);
   }
 
   async findOrCreate(name: string): Promise<Category> {

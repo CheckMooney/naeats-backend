@@ -5,8 +5,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiFile } from 'src/docs/decorators';
 import { imageMulterOptions } from 'src/utils/multer.options';
+import { UploadImageResponse } from './responses';
 import { UploadService } from './upload.service';
 
 @ApiTags('Upload')
@@ -14,24 +16,15 @@ import { UploadService } from './upload.service';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Post('image')
-  @ApiOperation({ description: '단일 이미지 업로드' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        image: {
-          type: 'string',
-          format: 'base64',
-        },
-      },
-    },
-  })
   @UseInterceptors(FileInterceptor('image', imageMulterOptions))
+  @Post('image')
+  @ApiFile('image')
+  @ApiOperation({ description: '단일 이미지 업로드' })
+  @ApiResponse({ status: 201, type: UploadImageResponse })
   uploadImage(@UploadedFile() image: Express.Multer.File) {
     const uploadedPath = this.uploadService.generateUploadedPath(image);
     return {
+      statusCode: 201,
       path: uploadedPath,
     };
   }

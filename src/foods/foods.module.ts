@@ -5,7 +5,7 @@ import {
   FoodsService,
   CategoriesService,
   UserLikeFoodService,
-} from './services';
+} from './providers';
 import { Food, Category, FoodCategory, UserLikeFood } from './entities';
 
 @Module({

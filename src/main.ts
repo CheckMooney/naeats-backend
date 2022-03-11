@@ -30,10 +30,27 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('The API description')
+    .setTitle('NaEats API Documentation')
+    .setDescription('Na Eats의 API')
     .setVersion('0.0.1')
-    .addBearerAuth()
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+      },
+      'AccessToken',
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        in: 'header',
+      },
+      'RefreshToken',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

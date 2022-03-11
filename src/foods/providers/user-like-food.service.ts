@@ -26,12 +26,16 @@ export class UserLikeFoodService {
     });
   }
 
-  async userLikeOrDislikeFood(userId: string, foodId: string): Promise<void> {
+  async userLikeOrDislikeFood(
+    userId: string,
+    foodId: string,
+  ): Promise<boolean> {
     const userLikeFood = await this.isUserLikeFoodExist(userId, foodId);
     if (userLikeFood) {
       await userLikeFood.destroy();
     } else {
       await this.createUserLikeFood(userId, foodId);
     }
+    return !userLikeFood;
   }
 }

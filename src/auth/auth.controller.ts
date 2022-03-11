@@ -4,7 +4,7 @@ import { AuthUser } from './decorators/auth-user.decorator';
 import { AuthService } from './auth.service';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { GoogleAuthDto, GoogleAuthResponse, RefreshResponse } from './dtos';
+import { GoogleAuthDto } from './dtos';
 import { ExceptionResponse } from 'src/common/responses/exception.response';
 import {
   ApiResponse,
@@ -12,6 +12,8 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { ApiAuth, ApiBaseResponse } from 'src/docs/decorators';
+import { GoogleAuthResponse, RefreshResponse } from './responses';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -38,6 +40,7 @@ export class AuthController {
     const accessToken = this.authService.getJwtAccessToken(user.id);
     const refreshToken = await this.authService.getJwtRefreshToken(user.id);
     return {
+      statusCode: 201,
       accessToken,
       refreshToken,
     };
@@ -45,6 +48,7 @@ export class AuthController {
 
   @UseGuards(JwtRefreshGuard)
   @Get('refresh')
+  @ApiAuth('RefreshToken')
   @ApiOperation({
     description: 'Refresh Token으로 AccessToken 재발급',
   })
@@ -62,16 +66,22 @@ export class AuthController {
   async refresh(@AuthUser() user: User) {
     const accessToken = this.authService.getJwtAccessToken(user.id);
     return {
+      statusCode: 201,
       accessToken,
     };
   }
 
   @UseGuards(JwtAccessGuard)
+  @ApiAuth('AccessToken')
   @Post('logout')
   @ApiOperation({
     description: 'RefreshToken을 삭제함으로 로그아웃',
   })
+  @ApiBaseResponse({ status: 201 })
   async logout(@AuthUser() user: User) {
     await this.authService.logOut(user.id);
+    return {
+      statusCode: 201,
+    };
   }
 }

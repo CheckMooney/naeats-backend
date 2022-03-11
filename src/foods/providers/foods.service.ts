@@ -3,6 +3,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CustomException } from 'src/common/exceptions/custom.exception';
 import { CategoriesService } from './categories.service';
+import { UserLikeFoodService } from './user-like-food.service';
 import { Food, Category, FoodCategory, UserLikeFood } from '../entities';
 import {
   CreateFoodDto,
@@ -11,6 +12,7 @@ import {
   UpdateFoodDto,
 } from '../dtos';
 import { User } from 'src/users/entities/user.entitiy';
+import sequelize from 'sequelize';
 
 @Injectable()
 export class FoodsService {
@@ -22,6 +24,7 @@ export class FoodsService {
     @InjectModel(UserLikeFood)
     private readonly userLikeFoodModel: typeof UserLikeFood,
     private readonly categoriesService: CategoriesService,
+    private readonly userLikeFoodService: UserLikeFoodService,
   ) {}
 
   async findById(id: string) {
@@ -54,21 +57,66 @@ export class FoodsService {
     return categoryCondition;
   }
 
-  async getAllFoods({ categories, or }: GetAllFoodsDto) {
-    const categoryCondition = this.getCategoryCondition(categories, or);
-    const foods = await this.foodModel.findAll({
-      attributes: ['id', 'name', 'thumbnail'],
+  async getFood(userId: string, foodId: string) {
+    const food = await this.foodModel.findOne({
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+        include: [
+          [sequelize.fn('COUNT', sequelize.col('likeUsers.id')), 'likeCount'],
+        ],
+      },
+      where: {
+        id: foodId,
+      },
       include: [
         {
           model: Category,
-          attributes: ['id', 'name'],
-          where: categoryCondition,
+          attributes: ['name'],
           through: {
             attributes: [],
           },
         },
+        {
+          model: User,
+          attributes: [],
+        },
+      ],
+      subQuery: false,
+      group: ['id', 'likeUsers.id', 'categories.id'],
+    });
+    if (!food) {
+      throw new CustomException(HttpStatus.NOT_FOUND, 40401);
+    }
+    const isUserLikeFood = await this.userLikeFoodService.isUserLikeFoodExist(
+      userId,
+      foodId,
+    );
+    return {
+      ...food.get({ plain: true }),
+      categories: food.categories.map((category) => category.name),
+      isLike: !!isUserLikeFood,
+    };
+  }
+
+  async getAllFoods({ categories, or }: GetAllFoodsDto) {
+    const categoryCondition = this.getCategoryCondition(categories, or);
+    const foods = await this.foodModel.findAll({
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
+      include: [
+        {
+          model: Category,
+          where: categoryCondition,
+          attributes: [],
+        },
+        {
+          model: User,
+          attributes: [],
+        },
       ],
     });
+
     return foods;
   }
 
@@ -77,19 +125,45 @@ export class FoodsService {
     const foods = await this.foodModel.findAndCountAll({
       limit,
       offset: limit * (page - 1),
-      attributes: ['id', 'name', 'thumbnail'],
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
       include: [
         {
           model: Category,
-          attributes: ['id', 'name'],
           where: categoryCondition,
-          through: {
-            attributes: [],
+          attributes: [],
+        },
+        {
+          model: User,
+          attributes: [],
+        },
+      ],
+      distinct: true,
+    });
+
+    return {
+      foods: foods.rows,
+      totalCount: foods.count,
+    };
+  }
+
+  async getLikeFoods(userId: string) {
+    const likeFoods = await this.foodModel.findAll({
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
+      include: [
+        {
+          model: User,
+          attributes: [],
+          where: {
+            id: userId,
           },
         },
       ],
     });
-    return foods;
+    return likeFoods;
   }
 
   async createFoodCategory(foodId: string, categoryId: string) {
@@ -131,21 +205,5 @@ export class FoodsService {
   async deleteFood(foodId: string) {
     const food = await this.findById(foodId);
     food.destroy();
-  }
-
-  async getLikeFoodList(userId: string) {
-    const foodList = await this.foodModel.findAll({
-      attributes: ['id', 'name', 'thumbnail'],
-      include: [
-        {
-          model: User,
-          attributes: [],
-          where: {
-            id: userId,
-          },
-        },
-      ],
-    });
-    return foodList;
   }
 }
