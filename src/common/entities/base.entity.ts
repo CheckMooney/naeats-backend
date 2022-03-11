@@ -4,7 +4,7 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table
 export class BaseModel extends Model {
-  @ApiProperty()
+  @ApiProperty({ description: 'id' })
   @IsUUID(4)
   @Column({
     type: DataType.UUID,

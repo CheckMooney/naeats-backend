@@ -1,30 +1,31 @@
 import * as bcrypt from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
-import { Table, Column, DataType } from 'sequelize-typescript';
+import { Table, Column, DataType, BelongsToMany } from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { IsEmail, IsString, IsUrl } from 'class-validator';
+import { Food } from 'src/foods/entities/food.entity';
+import { UserLikeFood } from 'src/foods/entities/user-like-food';
 
 @Table
 export class User extends BaseModel {
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 이메일' })
   @IsEmail()
   @Column({
     type: DataType.STRING,
-    unique: true,
     validate: {
       isEmail: true,
     },
   })
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 이름' })
   @IsString()
   @Column({
     type: DataType.STRING,
   })
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: '사용자 프로필 이미지' })
   @IsUrl()
   @Column({
     type: DataType.STRING,
@@ -34,12 +35,15 @@ export class User extends BaseModel {
   })
   profileImg: string;
 
+  @ApiProperty({ description: '좋아하는 음식들' })
+  @BelongsToMany(() => Food, () => UserLikeFood)
+  likeFoods: Array<Food & { UserLikeFood: UserLikeFood }>;
+
   @Column({
     type: DataType.STRING,
     allowNull: true,
     defaultValue: null,
     set(this: User, refreshToken: string | null) {
-      console.log(refreshToken);
       if (refreshToken) {
         const hashedRefreshToken = bcrypt.hashSync(refreshToken, 10);
         this.setDataValue('hashedRefreshToken', hashedRefreshToken);

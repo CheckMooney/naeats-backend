@@ -2,12 +2,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ErrorCode } from 'src/@types';
 
 export class ExceptionResponse {
-  @ApiProperty()
+  @ApiProperty({ description: 'Http status code' })
   statusCode: number;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Error Code' })
   errorCode?: ErrorCode;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Error Message' })
   message?: string;
 }
