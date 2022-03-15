@@ -5,6 +5,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { FoodsModule } from './foods/foods.module';
+import { EatLogsModule } from './eat-logs/eat-logs.module';
 import { UploadModule } from './upload/upload.module';
 
 @Module({
@@ -46,6 +47,7 @@ import { UploadModule } from './upload/upload.module';
     UsersModule,
     AuthModule,
     FoodsModule,
+    EatLogsModule,
     UploadModule,
   ],
   controllers: [],

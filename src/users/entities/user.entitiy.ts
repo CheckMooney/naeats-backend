@@ -1,10 +1,17 @@
 import * as bcrypt from 'bcrypt';
 import { ApiProperty } from '@nestjs/swagger';
-import { Table, Column, DataType, BelongsToMany } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  DataType,
+  BelongsToMany,
+  HasMany,
+} from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { IsEmail, IsString, IsUrl } from 'class-validator';
 import { Food } from 'src/foods/entities/food.entity';
 import { UserLikeFood } from 'src/foods/entities/user-like-food';
+import { EatLog } from 'src/eat-logs/entities/eat-log.entity';
 
 @Table
 export class User extends BaseModel {
@@ -38,6 +45,9 @@ export class User extends BaseModel {
   @ApiProperty({ description: '좋아하는 음식들' })
   @BelongsToMany(() => Food, () => UserLikeFood)
   likeFoods: Array<Food & { UserLikeFood: UserLikeFood }>;
+
+  @HasMany(() => EatLog)
+  eatLogs: EatLog[];
 
   @Column({
     type: DataType.STRING,

@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsUrl } from 'class-validator';
-import { Table, Column, DataType, BelongsToMany } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  DataType,
+  BelongsToMany,
+  HasMany,
+} from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
+import { EatLog } from 'src/eat-logs/entities/eat-log.entity';
 import { User } from 'src/users/entities/user.entitiy';
 import { Category } from './category.entity';
 import { FoodCategory } from './food-category.entitiy';
@@ -26,4 +33,7 @@ export class Food extends BaseModel {
   @ApiProperty()
   @BelongsToMany(() => User, () => UserLikeFood)
   likeUsers: Array<User & { UserLikeFood: UserLikeFood }>;
+
+  @HasMany(() => EatLog)
+  eatLogs: EatLog[];
 }
