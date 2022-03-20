@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BaseResponse } from 'src/common/responses/base.response';
+import { PaginationResponse } from 'src/common/responses/pagination.response';
 import { GetEatLogResponseData } from './get-eat-log.response';
 
-export class GetEatLogsResponse extends BaseResponse {
+export class GetEatLogsResponse extends PaginationResponse {
   @ApiProperty({
     description: '음식 먹은 기록들',
     isArray: true,

@@ -66,7 +66,7 @@ export class FoodsController {
   async createFood(@Body() createFoodDto: CreateFoodDto) {
     await this.foodsService.createFood(createFoodDto);
     return {
-      status: 201,
+      statusCode: 201,
     };
   }
 
@@ -121,7 +121,7 @@ export class FoodsController {
       foodId,
     );
     return {
-      status: 201,
+      statusCode: 201,
       isLike,
     };
   }
@@ -146,7 +146,7 @@ export class FoodsController {
   ) {
     await this.foodsService.updateFood(id, updateFoodDto);
     return {
-      status: 200,
+      statusCode: 200,
     };
   }
 
@@ -156,7 +156,7 @@ export class FoodsController {
   async deleteFood(@Param('id') id: string) {
     await this.foodsService.deleteFood(id);
     return {
-      status: 200,
+      statusCode: 200,
     };
   }
 }

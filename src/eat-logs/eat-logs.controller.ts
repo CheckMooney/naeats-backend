@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -13,11 +14,11 @@ import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { ApiAuth, ApiBaseResponse } from 'src/docs/decorators';
 import { User } from 'src/users/entities/user.entitiy';
-import { CreateEatLogDto, UpdateEatLogDto } from './dtos';
+import { CreateEatLogDto, GetEatLogsDto, UpdateEatLogDto } from './dtos';
 import { EatLogsService } from './eat-logs.service';
 import { GetEatLogResponse, GetEatLogsResponse } from './responses';
 
-@ApiTags('EatLog')
+@ApiTags('EatLogs')
 @ApiAuth('AccessToken')
 @UseGuards(JwtAccessGuard)
 @Controller('eat-logs')
@@ -27,10 +28,18 @@ export class EatLogsController {
   @Get()
   @ApiOperation({ description: '사용자가 먹은 음식 로그 불러오기' })
   @ApiResponse({ status: 200, type: GetEatLogsResponse })
-  async getEatLogs(@AuthUser() user: User) {
-    const eatLogs = await this.eatLogsService.getEatLogs(user.id);
+  async getEatLogs(
+    @AuthUser() user: User,
+    @Query() getEatLogsDto: GetEatLogsDto,
+  ) {
+    const { eatLogs, totalCount } = await this.eatLogsService.getEatLogs(
+      user.id,
+      getEatLogsDto,
+    );
     return {
+      statusCode: 200,
       eatLogs,
+      totalCount,
     };
   }
 
@@ -67,7 +76,7 @@ export class EatLogsController {
   ) {
     await this.eatLogsService.updateEatLog(eatLogId, updateEatLogDto);
     return {
-      status: 201,
+      statusCode: 201,
     };
   }
 
@@ -77,7 +86,7 @@ export class EatLogsController {
   async deleteEatLog(@Param('id') eatLogId: string) {
     await this.eatLogsService.deleteEatLog(eatLogId);
     return {
-      status: 201,
+      statusCode: 201,
     };
   }
 }

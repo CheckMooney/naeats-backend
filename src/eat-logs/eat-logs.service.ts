@@ -5,7 +5,7 @@ import { Food } from 'src/foods/entities';
 import { FoodsService } from 'src/foods/providers';
 import { User } from 'src/users/entities/user.entitiy';
 import { UsersService } from 'src/users/users.service';
-import { CreateEatLogDto, UpdateEatLogDto } from './dtos';
+import { CreateEatLogDto, GetEatLogsDto, UpdateEatLogDto } from './dtos';
 import { EatLog } from './entities/eat-log.entity';
 
 @Injectable()
@@ -50,8 +50,8 @@ export class EatLogsService {
     return eatLog;
   }
 
-  async getEatLogs(userId: string) {
-    const eatLogs = await this.eatLogModel.findAll({
+  async getEatLogs(userId: string, { page, limit }: GetEatLogsDto) {
+    const { rows, count } = await this.eatLogModel.findAndCountAll({
       attributes: ['id', 'eatDate', 'description'],
       include: [
         {
@@ -66,8 +66,13 @@ export class EatLogsService {
           },
         },
       ],
+      offset: limit * (page - 1),
+      limit,
     });
-    return eatLogs;
+    return {
+      eatLogs: rows,
+      totalCount: count,
+    };
   }
 
   async createEatLog(

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDate, IsOptional, IsString, Length } from 'class-validator';
 import {
   BelongsTo,
@@ -20,7 +20,7 @@ export class EatLog extends BaseModel {
   })
   eatDate: Date;
 
-  @ApiProperty({ description: '설명 또는 메모' })
+  @ApiPropertyOptional({ description: '설명 또는 메모' })
   @Column({
     type: DataType.STRING,
     allowNull: true,
