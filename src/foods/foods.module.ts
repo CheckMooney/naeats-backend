@@ -14,5 +14,6 @@ import { Food, Category, FoodCategory, UserLikeFood } from './entities';
   ],
   providers: [CategoriesService, FoodsService, UserLikeFoodService],
   controllers: [FoodsController],
+  exports: [FoodsService],
 })
 export class FoodsModule {}
