@@ -57,6 +57,40 @@ export class FoodsService {
     return categoryCondition;
   }
 
+  getCategoryLiteralCondition(
+    categories: undefined | string | string[],
+    or: undefined | boolean,
+  ): any {
+    const literalCondition: sequelize.Utils.Literal[] = []
+
+    if(!categories || (Array.isArray(categories) && categories.length === 0)) return {}
+
+    if(typeof categories ==='string'){
+      literalCondition.push(
+        sequelize.literal(
+          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categories +'"))'
+        )
+      );
+    } else if (or) {
+      const categorieStringArray = categories.join('","');
+      literalCondition.push(
+        sequelize.literal(
+          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categorieStringArray +'"))'
+        )
+      );
+    } else {
+      categories.forEach(categorie => {
+        literalCondition.push(
+          sequelize.literal(
+            'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categorie +'"))'
+          )
+        );
+      });
+    }
+
+    return {[sequelize.Op.and] : literalCondition};
+  }
+
   async getFood(userId: string, foodId: string) {
     const food = await this.foodModel.findOne({
       attributes: {
@@ -98,52 +132,80 @@ export class FoodsService {
     };
   }
 
-  async getAllFoods({ categories, or }: GetAllFoodsDto) {
-    const categoryCondition = this.getCategoryCondition(categories, or);
+  async getAllFoods({ categories, or }: GetAllFoodsDto, userId?) {
+    const categoryLiteralCondition = this.getCategoryLiteralCondition(categories, or);
+    
     const foods = await this.foodModel.findAll({
+      where: {  
+        ...categoryLiteralCondition
+      },
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
+        include: [
+          [sequelize.literal('IF(`likeUsers->UserLikeFood`.`id` is not null , True, False)'), 'isLike'],
+        ],
       },
       include: [
         {
           model: Category,
-          where: categoryCondition,
-          attributes: [],
+          // where: categoryCondition,
+          attributes: ['name'],
         },
         {
           model: User,
+          required: false,
+          where: {id: userId},
           attributes: [],
         },
       ],
     });
 
-    return foods;
+    //TODO refactoring needed
+    return foods.map(food=> {
+      food = food.get({ plain: true })
+      food.categories = food.categories.map((category) => category.name) as any
+      food.isLike = Boolean(food.isLike)
+      return food;
+    });
   }
 
-  async getFoods({ page, limit, categories, or }: GetFoodsDto) {
-    const categoryCondition = this.getCategoryCondition(categories, or);
+  async getFoods({ page, limit, categories, or }: GetFoodsDto, userId?) {
+    const categoryLiteralCondition = this.getCategoryLiteralCondition(categories, or);
+    
     const foods = await this.foodModel.findAndCountAll({
-      limit,
-      offset: limit * (page - 1),
+      where: {  
+        ...categoryLiteralCondition
+      },
+      distinct: true,
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
+        include: [
+          [sequelize.literal('IF(`likeUsers->UserLikeFood`.`id` is not null , True, False)'), 'isLike'],
+        ],
       },
+      limit,
+      offset: limit * (page - 1),
       include: [
         {
           model: Category,
-          where: categoryCondition,
-          attributes: [],
+          attributes: ['name'],
         },
         {
           model: User,
+          required: false,
+          where: {id: userId},
           attributes: [],
         },
       ],
-      distinct: true,
+      subQuery: false,
     });
-
     return {
-      foods: foods.rows,
+      foods: foods.rows.map(food=> {
+        food = food.get({ plain: true })
+        food.categories = food.categories.map((category) => category.name) as any
+        food.isLike = Boolean(food.isLike)
+        return food;
+      }),
       totalCount: foods.count,
     };
   }
