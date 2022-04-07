@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber } from 'class-validator';
-import { Column, ForeignKey, Table, DataType, Default } from 'sequelize-typescript';
+import {
+  Column,
+  ForeignKey,
+  Table,
+  DataType,
+  Default,
+} from 'sequelize-typescript';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { User } from 'src/users/entities/user.entitiy';
 import { Food } from './food.entity';

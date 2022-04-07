@@ -53,7 +53,10 @@ export class FoodsController {
     type: GetFoodsResponse,
   })
   async getFoods(@Query() getFoodsDto: GetFoodsDto, @AuthUser() user: User) {
-    const { foods, totalCount } = await this.foodsService.getFoods(getFoodsDto, user.id);
+    const { foods, totalCount } = await this.foodsService.getFoods(
+      getFoodsDto,
+      user.id,
+    );
     return {
       statusCode: 200,
       foods,
@@ -77,7 +80,10 @@ export class FoodsController {
     status: 200,
     type: GetAllFoodsResponse,
   })
-  async getAllFoods(@Query() getAllFoodsDto: GetAllFoodsDto, @AuthUser() user: User) {
+  async getAllFoods(
+    @Query() getAllFoodsDto: GetAllFoodsDto,
+    @AuthUser() user: User,
+  ) {
     const foods = await this.foodsService.getAllFoods(getAllFoodsDto, user.id);
     return {
       statusCode: 200,
@@ -111,21 +117,23 @@ export class FoodsController {
   }
 
   @Post('/like/:id')
-  @ApiOperation({ description: '음식 좋아요 또는 취소' })
+  @ApiOperation({ description: '음식 좋아요/싫어요 또는 취소' })
   @ApiResponse({ status: 201, type: UserLikeOrDislikeFoodResponse })
   async userLikeOrDislikeFood(
     @AuthUser() user: User,
     @Param('id') foodId: string,
     @Body() CreateLikeDto: CreateLikeDto,
   ) {
-    const isLike = await this.userLikeFoodService.userLikeOrDislikeFood(
-      user.id,
-      foodId,
-      false,
-    );
+    const { isLike, isDisLike } =
+      await this.userLikeFoodService.userLikeOrDislikeFood(
+        user.id,
+        foodId,
+        CreateLikeDto.isDislike,
+      );
     return {
       statusCode: 201,
       isLike,
+      isDisLike,
     };
   }
 

@@ -61,34 +61,41 @@ export class FoodsService {
     categories: undefined | string | string[],
     or: undefined | boolean,
   ): any {
-    const literalCondition: sequelize.Utils.Literal[] = []
+    const literalCondition: sequelize.Utils.Literal[] = [];
 
-    if(!categories || (Array.isArray(categories) && categories.length === 0)) return {}
+    if (!categories || (Array.isArray(categories) && categories.length === 0))
+      return {};
 
-    if(typeof categories ==='string'){
+    if (typeof categories === 'string') {
       literalCondition.push(
         sequelize.literal(
-          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categories +'"))'
-        )
+          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("' +
+            categories +
+            '"))',
+        ),
       );
     } else if (or) {
       const categorieStringArray = categories.join('","');
       literalCondition.push(
         sequelize.literal(
-          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categorieStringArray +'"))'
-        )
+          'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("' +
+            categorieStringArray +
+            '"))',
+        ),
       );
     } else {
-      categories.forEach(categorie => {
+      categories.forEach((category) => {
         literalCondition.push(
           sequelize.literal(
-            'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("'+ categorie +'"))'
-          )
+            'exists (select `Categories`.`id` from `Categories`,`FoodCategories` where `Food`.`id` = `FoodCategories`.`foodId` and `FoodCategories`.`categoryId` = `Categories`.`id` and `Categories`.`name` in ("' +
+              category +
+              '"))',
+          ),
         );
       });
     }
 
-    return {[sequelize.Op.and] : literalCondition};
+    return { [sequelize.Op.and]: literalCondition };
   }
 
   async getFood(userId: string, foodId: string) {
@@ -133,54 +140,69 @@ export class FoodsService {
   }
 
   async getAllFoods({ categories, or }: GetAllFoodsDto, userId?) {
-    const categoryLiteralCondition = this.getCategoryLiteralCondition(categories, or);
-    
+    const categoryLiteralCondition = this.getCategoryLiteralCondition(
+      categories,
+      or,
+    );
+
     const foods = await this.foodModel.findAll({
-      where: {  
-        ...categoryLiteralCondition
+      where: {
+        ...categoryLiteralCondition,
       },
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
         include: [
-          [sequelize.literal('IF(`likeUsers->UserLikeFood`.`id` is not null , True, False)'), 'isLike'],
+          [
+            sequelize.literal(
+              'IF(`UserLikeFood`.`id` is not null , True, False)',
+            ),
+            'isLike',
+          ],
         ],
       },
       include: [
         {
           model: Category,
-          // where: categoryCondition,
           attributes: ['name'],
         },
         {
-          model: User,
+          model: UserLikeFood,
           required: false,
-          where: {id: userId},
+          where: { userId, isDislike: false },
           attributes: [],
         },
       ],
     });
 
     //TODO refactoring needed
-    return foods.map(food=> {
-      food = food.get({ plain: true })
-      food.categories = food.categories.map((category) => category.name) as any
-      food.isLike = Boolean(food.isLike)
+    return foods.map((food) => {
+      food = food.get({ plain: true });
+      food.categories = food.categories.map((category) => category.name) as any;
+      food.isLike = Boolean(food.isLike);
       return food;
     });
   }
 
   async getFoods({ page, limit, categories, or }: GetFoodsDto, userId?) {
-    const categoryLiteralCondition = this.getCategoryLiteralCondition(categories, or);
-    
+    const categoryLiteralCondition = this.getCategoryLiteralCondition(
+      categories,
+      or,
+    );
+
     const foods = await this.foodModel.findAndCountAll({
-      where: {  
-        ...categoryLiteralCondition
+      where: {
+        ...categoryLiteralCondition,
       },
       distinct: true,
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
         include: [
-          [sequelize.literal('IF(`likeUsers->UserLikeFood`.`id` is not null , True, False)'), 'isLike'],
+          [
+            sequelize.literal(
+              'IF(`UserLikeFood`.`id` is not null , True, False)',
+            ),
+            'isLike',
+          ],
         ],
       },
       limit,
@@ -191,19 +213,22 @@ export class FoodsService {
           attributes: ['name'],
         },
         {
-          model: User,
+          model: UserLikeFood,
           required: false,
-          where: {id: userId},
+          where: { userId, isDislike: false },
           attributes: [],
         },
       ],
       subQuery: false,
     });
+
     return {
-      foods: foods.rows.map(food=> {
-        food = food.get({ plain: true })
-        food.categories = food.categories.map((category) => category.name) as any
-        food.isLike = Boolean(food.isLike)
+      foods: foods.rows.map((food) => {
+        food = food.get({ plain: true });
+        food.categories = food.categories.map(
+          (category) => category.name,
+        ) as any;
+        food.isLike = Boolean(food.isLike);
         return food;
       }),
       totalCount: foods.count,
@@ -217,11 +242,10 @@ export class FoodsService {
       },
       include: [
         {
-          model: User,
+          model: UserLikeFood,
+          required: true,
+          where: { userId, isDislike: false },
           attributes: [],
-          where: {
-            id: userId,
-          },
         },
       ],
     });

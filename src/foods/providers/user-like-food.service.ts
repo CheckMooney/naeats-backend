@@ -19,25 +19,33 @@ export class UserLikeFoodService {
     return userLikeFood;
   }
 
-  async createUserLikeFood(userId: string, foodId: string, isDislike?: boolean): Promise<void> {
+  async createUserLikeFood(
+    userId: string,
+    foodId: string,
+    isDislike?: boolean,
+  ): Promise<void> {
     await this.userLikeFoodModel.create({
       userId,
       foodId,
-      isDislike: Boolean(isDislike)
+      isDislike: Boolean(isDislike),
     });
   }
 
   async userLikeOrDislikeFood(
     userId: string,
     foodId: string,
-    isDislike: boolean
-  ): Promise<boolean> {
+    isDislike: boolean,
+  ): Promise<any> {
     const userLikeFood = await this.isUserLikeFoodExist(userId, foodId);
     if (userLikeFood) {
       await userLikeFood.destroy();
     } else {
       await this.createUserLikeFood(userId, foodId, isDislike);
     }
-    return !userLikeFood;
+    // return !userLikeFood;
+    return {
+      isLike: !userLikeFood && !isDislike,
+      isDisLike: !userLikeFood && isDislike,
+    };
   }
 }
