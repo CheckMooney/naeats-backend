@@ -12,9 +12,10 @@ export class UserLikeFoodService {
   async isUserLikeFoodExist(
     userId: string,
     foodId: string,
+    isDisLike?: boolean,
   ): Promise<UserLikeFood | null> {
     const userLikeFood = await this.userLikeFoodModel.findOne({
-      where: { userId, foodId },
+      where: { userId, foodId, ...(isDisLike ? { isDisLike } : {}) },
     });
     return userLikeFood;
   }

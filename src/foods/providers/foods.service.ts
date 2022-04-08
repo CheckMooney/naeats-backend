@@ -131,6 +131,7 @@ export class FoodsService {
     const isUserLikeFood = await this.userLikeFoodService.isUserLikeFoodExist(
       userId,
       foodId,
+      false,
     );
     return {
       ...food.get({ plain: true }),
