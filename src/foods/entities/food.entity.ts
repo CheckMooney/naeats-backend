@@ -34,6 +34,6 @@ export class Food extends BaseModel {
   @BelongsToMany(() => User, () => UserLikeFood)
   likeUsers: Array<User & { UserLikeFood: UserLikeFood }>;
 
-  @HasMany(() => EatLog)
+  @HasMany(() => EatLog, { as: 'eatlogs' })
   eatLogs: EatLog[];
 }

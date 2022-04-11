@@ -3,9 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,9 +12,13 @@ import { AuthUser } from 'src/auth/decorators/auth-user.decorator';
 import { JwtAccessGuard } from 'src/auth/guards/jwt-access.guard';
 import { ApiAuth, ApiBaseResponse } from 'src/docs/decorators';
 import { User } from 'src/users/entities/user.entitiy';
-import { CreateEatLogDto, GetEatLogsDto, UpdateEatLogDto } from './dtos';
 import { EatLogsService } from './eat-logs.service';
-import { GetEatLogResponse, GetEatLogsResponse } from './responses';
+import {
+  CreateOrUpdateEatLogDto,
+  DeleteEatLogDto,
+  GetEatLogsDto,
+} from './dtos';
+import { GetEatLogsResponse } from './responses';
 
 @ApiTags('EatLogs')
 @ApiAuth('AccessToken')
@@ -44,47 +46,29 @@ export class EatLogsController {
   }
 
   @Post()
-  @ApiOperation({ description: '음식 먹은 로그 만들기' })
+  @ApiOperation({ description: '음식 먹은 로그 생성 또는 수정' })
   @ApiBaseResponse({ status: 201 })
   async createEatLog(
     @AuthUser() user: User,
-    @Body() createEatLogDto: CreateEatLogDto,
+    @Body() createOrUpdateEatLogDto: CreateOrUpdateEatLogDto,
   ) {
-    await this.eatLogsService.createEatLog(user.id, createEatLogDto);
+    await this.eatLogsService.createOrUpdateEatLog(
+      user.id,
+      createOrUpdateEatLogDto,
+    );
     return {
       statusCode: 201,
     };
   }
 
-  @Get('/:id')
-  @ApiOperation({ description: '음식 먹은 로그 불러오기' })
-  @ApiResponse({ status: 200, type: GetEatLogResponse })
-  async getEatLog(@AuthUser() user: User, @Param('id') eatLogId: string) {
-    const eatLog = await this.eatLogsService.getEatLog(user.id, eatLogId);
-    return {
-      statusCode: 200,
-      eatLog,
-    };
-  }
-
-  @Put('/:id')
-  @ApiOperation({ description: '음식 먹은 로그 수정' })
-  @ApiBaseResponse({ status: 201 })
-  async updateEatLog(
-    @Param('id') eatLogId: string,
-    @Body() updateEatLogDto: UpdateEatLogDto,
-  ) {
-    await this.eatLogsService.updateEatLog(eatLogId, updateEatLogDto);
-    return {
-      statusCode: 201,
-    };
-  }
-
-  @Delete('/:id')
+  @Delete()
   @ApiOperation({ description: '음식 먹은 로그 삭제' })
   @ApiBaseResponse({ status: 201 })
-  async deleteEatLog(@Param('id') eatLogId: string) {
-    await this.eatLogsService.deleteEatLog(eatLogId);
+  async deleteEatLog(
+    @AuthUser() user: User,
+    @Body() { foodId }: DeleteEatLogDto,
+  ) {
+    await this.eatLogsService.deleteEatLog(user.id, foodId);
     return {
       statusCode: 201,
     };
