@@ -34,6 +34,12 @@ export class Food extends BaseModel {
   @BelongsToMany(() => User, () => UserLikeFood)
   likeUsers: Array<User & { UserLikeFood: UserLikeFood }>;
 
+  @HasMany(() => UserLikeFood)
+  UserLikeFood: UserLikeFood[];
+
+  //for sequelize literal query
+  isLike: boolean;
+  
   @HasMany(() => EatLog, { as: 'eatlogs' })
   eatLogs: EatLog[];
 }

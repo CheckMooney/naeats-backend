@@ -12,30 +12,41 @@ export class UserLikeFoodService {
   async isUserLikeFoodExist(
     userId: string,
     foodId: string,
+    isDisLike?: boolean,
   ): Promise<UserLikeFood | null> {
     const userLikeFood = await this.userLikeFoodModel.findOne({
-      where: { userId, foodId },
+      where: { userId, foodId, ...(isDisLike ? { isDisLike } : {}) },
     });
     return userLikeFood;
   }
 
-  async createUserLikeFood(userId: string, foodId: string): Promise<void> {
+  async createUserLikeFood(
+    userId: string,
+    foodId: string,
+    isDislike?: boolean,
+  ): Promise<void> {
     await this.userLikeFoodModel.create({
       userId,
       foodId,
+      isDislike: Boolean(isDislike),
     });
   }
 
   async userLikeOrDislikeFood(
     userId: string,
     foodId: string,
-  ): Promise<boolean> {
+    isDislike: boolean,
+  ): Promise<any> {
     const userLikeFood = await this.isUserLikeFoodExist(userId, foodId);
     if (userLikeFood) {
       await userLikeFood.destroy();
     } else {
-      await this.createUserLikeFood(userId, foodId);
+      await this.createUserLikeFood(userId, foodId, isDislike);
     }
-    return !userLikeFood;
+    // return !userLikeFood;
+    return {
+      isLike: !userLikeFood && !isDislike,
+      isDisLike: !userLikeFood && isDislike,
+    };
   }
 }
