@@ -2,7 +2,7 @@ import sequelize, { Op } from 'sequelize';
 import { Injectable } from '@nestjs/common';
 import { FoodsService } from 'src/foods/providers';
 import { InjectModel } from '@nestjs/sequelize';
-import { Category, Food } from 'src/foods/entities';
+import { Category, Food, UserLikeFood } from 'src/foods/entities';
 import { EatLog } from 'src/eat-logs/entities/eat-log.entity';
 import { GetRecommendsDto } from './dtos';
 import { beforeNDay } from 'src/utils/date.util';
@@ -18,7 +18,7 @@ export class RecommendsService {
 
   async getRecommends(
     userId: string,
-    { day, isEat, orderBy, page, limit }: GetRecommendsDto,
+    { day, isEat, isLike, orderBy, page, limit }: GetRecommendsDto,
   ) {
     const isRandom = orderBy === OrderBy.RAND;
     const { rows, count } = await this.foodModel.findAndCountAll({
@@ -27,6 +27,12 @@ export class RecommendsService {
         'name',
         'thumbnail',
         [sequelize.literal('`eatlogs`.`eatDate`'), 'lastEatDate'],
+        [
+          sequelize.literal(
+            'IF(`UserLikeFood`.`id` is not null AND `UserLikeFood`.`isDislike` is False, True, False)',
+          ),
+          'isLike',
+        ],
       ],
       include: [
         {
@@ -46,6 +52,14 @@ export class RecommendsService {
             attributes: [],
           },
         },
+        {
+          model: UserLikeFood,
+          required: false,
+          where: {
+            userId,
+          },
+          attributes: [],
+        },
       ],
       order: [
         isRandom
@@ -59,6 +73,9 @@ export class RecommendsService {
             [Op.eq]: null,
           },
         },
+        '$UserLikeFood.isDislike$': {
+          [Op.or]: isLike ? [false] : [false, null],
+        },
       },
       distinct: true,
       subQuery: false,
@@ -70,6 +87,7 @@ export class RecommendsService {
       const plain = food.get({ plain: true });
       return {
         ...plain,
+        isLike: Boolean(plain.isLike),
         categories: plain.categories.map(({ name }) => name),
       };
     });

@@ -10,6 +10,9 @@ class RecommendData extends PickType(Food, [
 ] as const) {
   @ApiProperty({ description: '음식을 가장 마지막에 먹은 날짜' })
   lastEatDate: Date | null;
+
+  @ApiProperty({ description: '음식을 좋아하는 여부' })
+  isLike: boolean;
 }
 
 export class GetRecommendsResponse extends PaginationResponse {
