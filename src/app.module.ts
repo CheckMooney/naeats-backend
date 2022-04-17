@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { FoodsModule } from './foods/foods.module';
 import { EatLogsModule } from './eat-logs/eat-logs.module';
 import { UploadModule } from './upload/upload.module';
+import { RecommendsModule } from './recommends/recommends.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { UploadModule } from './upload/upload.module';
     FoodsModule,
     EatLogsModule,
     UploadModule,
+    RecommendsModule,
   ],
   controllers: [],
   providers: [],

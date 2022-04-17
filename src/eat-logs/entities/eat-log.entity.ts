@@ -27,7 +27,7 @@ export class EatLog extends BaseModel {
   })
   @IsOptional()
   @IsString()
-  @Length(1, 255)
+  @Length(0, 255)
   description?: string;
 
   @ApiProperty({ description: '사용자 ID' })
@@ -46,9 +46,9 @@ export class EatLog extends BaseModel {
   })
   foodId: string;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User, { as: 'user' })
   user: User;
 
-  @BelongsTo(() => Food)
-  food: User;
+  @BelongsTo(() => Food, { as: 'food' })
+  food: Food;
 }
