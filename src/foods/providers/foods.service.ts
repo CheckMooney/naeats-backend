@@ -1,18 +1,18 @@
-import { Op } from 'sequelize';
+import sequelize, { Op } from 'sequelize';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CustomException } from 'src/common/exceptions/custom.exception';
 import { CategoriesService } from './categories.service';
 import { UserLikeFoodService } from './user-like-food.service';
 import { Food, Category, FoodCategory, UserLikeFood } from '../entities';
+import { User } from 'src/users/entities/user.entitiy';
+import { EatLog } from 'src/eat-logs/entities/eat-log.entity';
 import {
   CreateFoodDto,
   GetAllFoodsDto,
   GetFoodsDto,
   UpdateFoodDto,
 } from '../dtos';
-import { User } from 'src/users/entities/user.entitiy';
-import sequelize from 'sequelize';
 
 @Injectable()
 export class FoodsService {
@@ -21,8 +21,6 @@ export class FoodsService {
     private readonly foodModel: typeof Food,
     @InjectModel(FoodCategory)
     private readonly foodCategoryModel: typeof FoodCategory,
-    @InjectModel(UserLikeFood)
-    private readonly userLikeFoodModel: typeof UserLikeFood,
     private readonly categoriesService: CategoriesService,
     private readonly userLikeFoodService: UserLikeFoodService,
   ) {}
@@ -100,14 +98,21 @@ export class FoodsService {
 
   async getFood(userId: string, foodId: string) {
     const food = await this.foodModel.findOne({
+      where: {
+        id: foodId,
+      },
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
         include: [
+          [
+            sequelize.literal(
+              'IF(`UserLikeFood`.`id` is not null , True, False)',
+            ),
+            'isLike',
+          ],
+          [sequelize.literal('`eatlogs`.`eatDate`'), 'lastEatDate'],
           [sequelize.fn('COUNT', sequelize.col('likeUsers.id')), 'likeCount'],
         ],
-      },
-      where: {
-        id: foodId,
       },
       include: [
         {
@@ -118,25 +123,39 @@ export class FoodsService {
           },
         },
         {
-          model: User,
+          model: UserLikeFood,
+          where: { userId: userId },
+          required: false,
           attributes: [],
         },
+        {
+          model: User,
+          attributes: [],
+          through: {
+            attributes: [],
+          },
+        },
+        {
+          model: EatLog,
+          as: 'eatlogs',
+          where: {
+            userId,
+          },
+          attributes: [],
+          required: false,
+        },
       ],
-      subQuery: false,
-      group: ['id', 'likeUsers.id', 'categories.id'],
+      group: ['id', 'eatlogs.id', 'categories.id'],
     });
     if (!food) {
       throw new CustomException(HttpStatus.NOT_FOUND, 40401);
     }
-    const isUserLikeFood = await this.userLikeFoodService.isUserLikeFoodExist(
-      userId,
-      foodId,
-      false,
-    );
+
+    const plainFood = food.get({ plain: true });
     return {
-      ...food.get({ plain: true }),
-      categories: food.categories.map((category) => category.name),
-      isLike: !!isUserLikeFood,
+      ...plainFood,
+      isLike: Boolean(plainFood.isLike),
+      categories: plainFood.categories.map(({ name }) => name),
     };
   }
 
@@ -159,6 +178,7 @@ export class FoodsService {
             ),
             'isLike',
           ],
+          [sequelize.literal('`eatlogs`.`eatDate`'), 'lastEatDate'],
         ],
       },
       include: [
@@ -171,6 +191,15 @@ export class FoodsService {
           required: false,
           where: { userId, isDislike: false },
           attributes: [],
+        },
+        {
+          model: EatLog,
+          as: 'eatlogs',
+          where: {
+            userId,
+          },
+          attributes: [],
+          required: false,
         },
       ],
     });
@@ -204,6 +233,7 @@ export class FoodsService {
             ),
             'isLike',
           ],
+          [sequelize.literal('`eatlogs`.`eatDate`'), 'lastEatDate'],
         ],
       },
       limit,
@@ -218,6 +248,15 @@ export class FoodsService {
           required: false,
           where: { userId, isDislike: false },
           attributes: [],
+        },
+        {
+          model: EatLog,
+          as: 'eatlogs',
+          where: {
+            userId,
+          },
+          attributes: [],
+          required: false,
         },
       ],
       subQuery: false,
