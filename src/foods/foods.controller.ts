@@ -122,13 +122,13 @@ export class FoodsController {
   async userLikeOrDislikeFood(
     @AuthUser() user: User,
     @Param('id') foodId: string,
-    @Body() CreateLikeDto: CreateLikeDto,
+    @Body() createLikeDto: CreateLikeDto,
   ) {
     const { isLike, isDisLike } =
       await this.userLikeFoodService.userLikeOrDislikeFood(
         user.id,
         foodId,
-        CreateLikeDto.isDislike,
+        createLikeDto.isDislike,
       );
     return {
       statusCode: 201,
