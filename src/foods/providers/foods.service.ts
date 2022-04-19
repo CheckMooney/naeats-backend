@@ -275,21 +275,55 @@ export class FoodsService {
     };
   }
 
-  async getLikeFoods(userId: string) {
-    const likeFoods = await this.foodModel.findAll({
+  async getLikeOrDislikeFoods(userId: string, isLike: boolean) {
+    const foods = await this.foodModel.findAll({
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
+        include: [
+          [
+            sequelize.literal(
+              'IF(`UserLikeFood`.`isDislike` is False, True, False)',
+            ),
+            'isLike',
+          ],
+          [sequelize.literal('`eatlogs`.`eatDate`'), 'lastEatDate'],
+        ],
       },
       include: [
         {
+          model: Category,
+          attributes: ['name'],
+          through: {
+            attributes: [],
+          },
+        },
+        {
           model: UserLikeFood,
           required: true,
-          where: { userId, isDislike: false },
+          where: {
+            userId,
+            isDislike: !isLike,
+          },
           attributes: [],
+        },
+        {
+          model: EatLog,
+          as: 'eatlogs',
+          where: {
+            userId,
+          },
+          attributes: [],
+          required: false,
         },
       ],
     });
-    return likeFoods;
+
+    return foods.map((food) => {
+      food = food.get({ plain: true });
+      food.categories = food.categories.map((category) => category.name) as any;
+      food.isLike = Boolean(food.isLike);
+      return food;
+    });
   }
 
   async createFoodCategory(foodId: string, categoryId: string) {

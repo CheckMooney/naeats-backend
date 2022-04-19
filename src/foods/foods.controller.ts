@@ -109,7 +109,21 @@ export class FoodsController {
     type: GetLikeFoodsResponse,
   })
   async getLikeFoods(@AuthUser() user: User) {
-    const foods = await this.foodsService.getLikeFoods(user.id);
+    const foods = await this.foodsService.getLikeOrDislikeFoods(user.id, true);
+    return {
+      statusCode: 200,
+      foods,
+    };
+  }
+
+  @Get('/dislike')
+  @ApiOperation({ description: '사용자가 싫어하는 음식 가져오기' })
+  @ApiResponse({
+    status: 200,
+    type: GetLikeFoodsResponse,
+  })
+  async getDislikeFoods(@AuthUser() user: User) {
+    const foods = await this.foodsService.getLikeOrDislikeFoods(user.id, false);
     return {
       statusCode: 200,
       foods,
