@@ -18,9 +18,21 @@ export class RecommendsService {
 
   async getRecommends(
     userId: string,
-    { day, isEat, isLike, orderBy, page, limit }: GetRecommendsDto,
+    {
+      day,
+      isEat,
+      isLike,
+      orderBy,
+      page,
+      limit,
+      categories,
+      or,
+    }: GetRecommendsDto,
   ) {
     const isRandom = orderBy === OrderBy.RAND;
+    const categoryLiteralCondition =
+      this.foodsService.getCategoryLiteralCondition(categories, or);
+    console.log('recommendService:', categories, or);
     const { rows, count } = await this.foodModel.findAndCountAll({
       attributes: [
         'id',
@@ -76,6 +88,7 @@ export class RecommendsService {
         '$UserLikeFood.isDislike$': {
           [Op.or]: isLike ? [false] : [false, null],
         },
+        ...categoryLiteralCondition,
       },
       distinct: true,
       subQuery: false,

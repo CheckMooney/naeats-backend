@@ -1,10 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsInt, Min } from 'class-validator';
 import { TransformBoolean } from 'src/common/decorators/transform-boolean.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { OrderBy } from 'src/common/enums/order.enum';
+import { GetAllFoodsDto } from 'src/foods/dtos';
 
-export class GetRecommendsDto extends PaginationDto {
+export class GetRecommendsDto extends IntersectionType(
+  PaginationDto,
+  GetAllFoodsDto,
+) {
   @ApiProperty({ description: '먹은지 얼만큼 지난 것' })
   @IsInt()
   @Min(0)
