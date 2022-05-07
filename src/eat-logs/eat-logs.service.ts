@@ -26,6 +26,29 @@ export class EatLogsService {
     return eatLog;
   }
 
+  async findLastEatDate(userId: string, foodId: string) {
+    const eatLog = await this.eatLogModel.findOne({
+      include: [
+        {
+          model: User,
+          where: {
+            id: userId,
+          },
+        },
+        {
+          model: Food,
+          where: {
+            id: foodId,
+          },
+        },
+      ],
+    });
+    if (!eatLog) {
+      return null;
+    }
+    return eatLog.eatDate;
+  }
+
   async getEatLogs(userId: string, { page, limit }: GetEatLogsDto) {
     const { rows, count } = await this.eatLogModel.findAndCountAll({
       attributes: ['id', 'eatDate', 'description'],

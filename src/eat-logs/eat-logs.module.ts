@@ -10,5 +10,6 @@ import { EatLogsController } from './eat-logs.controller';
   imports: [SequelizeModule.forFeature([EatLog]), UsersModule, FoodsModule],
   providers: [EatLogsService],
   controllers: [EatLogsController],
+  exports: [EatLogsService],
 })
 export class EatLogsModule {}
