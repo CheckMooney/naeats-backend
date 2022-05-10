@@ -140,7 +140,7 @@ export class RecommendsService {
             },
           },
           attributes: [],
-          required: false,
+          required: true,
         },
         {
           model: Category,
@@ -165,14 +165,12 @@ export class RecommendsService {
     });
 
     const recommends = await Promise.all(
-      foods.map((food) => {
-        return this.handleRecentRecommendsData(food, userId);
-      }),
+      foods.map((food) => this.addLastEatDate(food, userId)),
     );
     return recommends;
   }
 
-  async handleRecentRecommendsData(food: Food, userId: string) {
+  async addLastEatDate(food: Food, userId: string) {
     const plain = food.get({ plain: true });
     const lastEatDate = await this.eatLogService.findLastEatDate(
       userId,
